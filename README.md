@@ -334,7 +334,7 @@ You can fetch standard post fields without ACF.
 
 ## 📚 **Changelog**
 
-**v1.0.0**
+**v2.1.0**
 
 * Initial release by **Sumair + ChatGPT**
 * Full support for:
