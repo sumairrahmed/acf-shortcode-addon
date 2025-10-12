@@ -2,7 +2,7 @@
 /**
  * Plugin Name: ACF Shortcode Addon
  * Description: One powerful shortcode for ACF/SCF fields with Pods-like niceties. Supports dot-notation, contexts (post/term/user/option/comment), media formatting, and enclosing template with magic tags.
- * Version: 1.0.0
+ * Version: 2.1.0
  * Author: Sumair + ChatGPT
  */
 
