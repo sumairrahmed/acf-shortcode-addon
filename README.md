@@ -1,74 +1,58 @@
-# 🧩 **ACF Shortcode Addon – Full Documentation**
+# 🧩 **ACF Shortcode Addon**
 
-*A single shortcode to rule them all: dynamic ACF + WordPress field access, media rendering, loops, and logic — all inside one tag.*
+*A single shortcode to rule them all: dynamic ACF + SCF + WordPress field access, smart media rendering, repeaters, groups, and row-aware logic — all inside one tag.*
 
 ---
 
 ## 📘 **Overview**
 
-The **ACF Shortcode Addon** provides a **universal `[acf_get]` shortcode** that fetches **Advanced Custom Fields (ACF)**, **Smart Custom Fields (SCF)**, and **native WordPress fields** — without any PHP templates.
+The **ACF Shortcode Addon** introduces a **universal `[acf_get]` shortcode** that can read **Advanced Custom Fields (ACF)**, **Secure Custom Fields (SCF)**, and **native WordPress data** — without touching your theme’s PHP.
 
-It’s designed for **Elementor**, **Gutenberg**, and **classic loop templates**, making it effortless to display custom data anywhere using shortcode logic.
+It behaves like a hybrid of **Pods magic-tags** and **ACF field rendering**, allowing dynamic display of any custom or core field with:
 
-This plugin merges the power of **Pods magic tags** with the flexibility of **ACF**, adding:
+* 🧩 **Dot-notation** (`manager.post_title`, `team.0.name`)
+* 🪄 **Magic tags** (`{@post_title}`)
+* 🔁 **Repeaters, groups, and nested loops**
+* ⚙️ **Row-aware conditionals** (`{@if field}` / `{@if field > 0}`)
+* 🖼️ **Automatic media rendering** (`|img`, `|a`, `|url`)
+* 🧠 **Field-label lookup** for groups
+* 🪆 **Nested shortcodes** inside templates
+* 🔐 **ACF + SCF + native fallback** detection
 
-* Smart **dot-notation** (`manager.post_title`)
-* **Pods-like magic tags** (`{@post_title}`)
-* **Conditionals** (`{@if field == "value"}`)
-* **Loops** for repeater, gallery, and relationship fields (`{@each field}`)
-* **Media rendering** (auto `<img>`, `<a>`, URLs, etc.)
-* **Template-only mode** (no `field` attribute needed)
+Perfect for **Elementor**, **Gutenberg**, or classic templates — it turns WordPress fields into a mini templating language.
 
 ---
 
 ## ⚙️ **Installation**
 
-1. Create a new folder inside your plugins directory:
-   `/wp-content/plugins/acf-shortcode-addon/`
-
-2. Add the file `acf-shortcode-addon.php` and paste the provided plugin code.
-
-3. Activate **ACF Shortcode Addon** in your WordPress Dashboard → **Plugins**.
-
-4. Use the `[acf_get]` shortcode anywhere — Elementor widgets, block editor, or classic templates.
+1. Create: `/wp-content/plugins/acf-shortcode-addon/`
+2. Add file: `acf-shortcode-addon.php` (paste full plugin code)
+3. Activate in **Dashboard → Plugins**
+4. Use `[acf_get]` anywhere — in blocks, Elementor, or PHP.
 
 ---
 
 ## 🧱 **Basic Usage**
 
-### 🔹 Self-Closing Shortcode
-
-Fetch a single field’s value:
+### 🔹 Self-Closing
 
 ```text
 [acf_get field="fund_code"]
 ```
 
-Specify context:
+or from a taxonomy term:
 
 ```text
 [acf_get field="description" ctx="term" id="term_24"]
 ```
 
-Fetch a field from the current user:
+or from the current user:
 
 ```text
 [acf_get field="phone_number" ctx="user"]
 ```
 
----
-
-### 🔹 Enclosing Template Mode
-
-Wrap dynamic tags with templated HTML:
-
-```text
-[acf_get field="gallery"]
-  <figure><img src="{@value|url}" alt=""></figure>
-[/acf_get]
-```
-
-Or omit the field attribute completely (uses current post context):
+### 🔹 Template Mode
 
 ```text
 [acf_get]
@@ -78,93 +62,98 @@ Or omit the field attribute completely (uses current post context):
 [/acf_get]
 ```
 
+Templates can include loops and logic; the `field` attribute is optional.
+
 ---
 
 ## 🧠 **Attributes Reference**
 
-| Attribute | Type       | Description                                                                                                                               |
-| --------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `field`   | string     | Field name or path (`manager.post_title`, `team.0.name`). Optional in template-only mode.                                                 |
-| `ctx`     | string     | Context source: `post`, `term`, `user`, `option`, `comment`. Default: `post`.                                                             |
-| `id`      | string/int | Object ID or prefixed form (`term_15`, `user_2`). Defaults to current post or user.                                                       |
-| `format`  | 1 or 0     | Use ACF’s `format_value` (1) or raw (0). Default: 1.                                                                                      |
-| `as`      | string     | How to render media: <br>**Image** → `img`, `url`, `id`, `array`<br>**File** → `link`, `a`, `url`, `id`<br>**Link** → `a`, `url`, `title` |
-| `attr`    | string     | Additional HTML attributes for `<img>` or `<a>` (e.g. `loading=lazy class=hero`).                                                         |
-| `alt`     | string     | Override the image alt text.                                                                                                              |
-| `title`   | string     | Override the title text for images or links.                                                                                              |
-| `sep`     | string     | Separator for array output (default `, `).                                                                                                |
-| `limit`   | int        | Limit number of items when field is an array.                                                                                             |
+| Attribute       | Type         | Description                                                         |
+| --------------- | ------------ | ------------------------------------------------------------------- |
+| `field`         | string       | Field name or path (`team.0.name`). Optional in template-only mode. |
+| `type`          | string       | `auto`, `repeater`, `relation`, `group`. Defaults to auto-detect.   |
+| `ctx`           | string       | `post`, `term`, `user`, `option`, `comment`. Default = `post`.      |
+| `id`            | string / int | Object ID or prefixed (`term_3`, `user_2`). Defaults to current.    |
+| `format`        | 0 / 1        | Use ACF `format_value` (1 = yes).                                   |
+| `as`            | string       | Media hint (`img`, `url`, `id`, `a`, `link`, `array`).              |
+| `attr`          | string       | Extra HTML attributes for media tags.                               |
+| `alt` / `title` | string       | Override image / link metadata.                                     |
+| `sep`           | string       | Separator for arrays (default `, `).                                |
+| `limit`         | int          | Max items for arrays or repeaters.                                  |
 
 ---
 
 ## 🪄 **Magic Tags**
 
-Inside `[acf_get]...[/acf_get]` you can use **magic tags** wrapped in `{@ ... }`.
-These resolve dynamically at render time.
+Magic tags live inside templates in braces `{@ ... }`.
 
-| Example                 | Description                          |                            |
-| ----------------------- | ------------------------------------ | -------------------------- |
-| `{@post_title}`         | Current post title                   |                            |
-| `{@permalink}`          | Post permalink                       |                            |
-| `{@post_id}` / `{@ID}`  | Post ID                              |                            |
-| `{@post_excerpt}`       | Post excerpt                         |                            |
-| `{@featured_image       | url}`                                | Featured image URL         |
-| `{@featured_image       | img}`                                | Featured image `<img>` tag |
-| `{@field_name}`         | Any ACF or SCF field                 |                            |
-| `{@manager.post_title}` | Related field using dot notation     |                            |
-| `{@i}`                  | Current loop index (starting from 1) |                            |
-| `{@value}`              | Current repeater or gallery item     |                            |
+| Example                             | Meaning                |
+| ----------------------------------- | ---------------------- | 
+| `{@post_title}`                     | Current post title     |
+| `{@permalink}`                      | Post URL               | 
+| `{@post_excerpt}`                   | Excerpt                | 
+| `{@featured_image url}`             | Featured image URL  with pipe-url |
+| `{@featured_image img}`             | Featured image tag  with pipe-img |
+| `{@field_name}`                     | Any ACF / SCF field    |
+| `{@manager.post_title}`             | Related object’s title |
+| `{@i}`                              | Loop index (1-based)   |
+| `{@_key}`, `{@_label}`, `{@_value}` | Inside group loops     |
 
-**Dot notation** works with ACF relationships, repeaters, and nested arrays:
+Dot-notation drills through related objects or nested arrays.
+
+---
+
+## 🖼️ **Media Rendering**
+
+| Field Type | Example                                                | Output                         |
+| ---------- | ------------------------------------------------------ | ------------------------------ |
+| Image      | `[acf_get field="hero" as="img"]`                      | `<img src="...">`              |
+| File       | `[acf_get field="pdf" as="link" title="Download"]`     | `<a href="...">Download</a>`   |
+| Link       | `[acf_get field="cta_link" as="a" title="Learn More"]` | `<a href="...">Learn More</a>` |
+| Gallery    | `[acf_get field="gallery" as="url" limit="3" sep=","]` | Comma-separated URLs           |
+
+Or inline pipes:
 
 ```text
-{@manager.post_title}
-{@team.0.name}
+{@hero|img}
+{@pdf_file|a}
+{@gallery|url}
 ```
 
 ---
 
-## 🖼️ **Media Formatting**
+## 🔁 **Repeaters & Groups**
 
-ACF image, file, or link fields can be automatically formatted using the `as` attribute or a pipe (`|`) filter.
-
-| Field Type  | Shortcode                                               | Output                         |              |
-| ----------- | ------------------------------------------------------- | ------------------------------ | ------------ |
-| Image (ID)  | `[acf_get field="hero" as="img"]`                       | `<img src="..." alt="...">`    |              |
-| Image (URL) | `[acf_get field="hero" as="url"]`                       | URL only                       |              |
-| File        | `[acf_get field="brochure" as="link" title="Download"]` | `<a href="...">Download</a>`   |              |
-| ACF Link    | `[acf_get field="cta_link" as="a" title="Learn More"]`  | `<a href="...">Learn More</a>` |              |
-| Gallery     | `[acf_get field="gallery" as="url" sep="                | " limit="3"]`                  | List of URLs |
-
-**In template tags:**
-
-```text
-{@hero_image|url}
-{@hero_image|img}
-{@pdf_file|link}
-```
-
----
-
-## 🔁 **Repeater & Looping Fields**
-
-Loop through arrays, repeaters, galleries, or relationship fields using `{@each}` blocks.
-
-**Example:**
+### Simple Repeater
 
 ```text
 [acf_get]
-  {@each team}
-    <div class="member">
-      <img src="{@photo|url}" alt="{@name|esc}">
-      <h3>{@name}</h3>
-      <p>{@role}</p>
-    </div>
-  {@/each}
+  <ul>
+    {@each features}
+      <li><strong>{@name}</strong> — {@description}</li>
+    {@/each}
+  </ul>
 [/acf_get]
 ```
 
-Nested loops are supported:
+### Group Field
+
+```text
+[acf_get]
+  <ul>
+    {@each fund_info}
+      {@if _value}
+        <li><strong>{@_label}</strong>: {@_value}</li>
+      {@/if}
+    {@/each}
+  </ul>
+[/acf_get]
+```
+
+Each sub-field appears as `_key`, `_label`, `_value`.
+Empty subfields are skipped automatically.
+
+### Nested Repeaters
 
 ```text
 {@each departments}
@@ -179,63 +168,108 @@ Nested loops are supported:
 
 ## 🔣 **Conditional Logic**
 
-Use **Pods-style conditionals** to render content dynamically.
-
-### Basic check
+Pods-style conditions, fully row-aware (each repeater row evaluated independently).
 
 ```text
-{@if featured}
-  <span class="badge">Featured</span>
-{@/if}
+{@if featured}<span>⭐ Featured</span>{@/if}
 ```
 
-### Comparisons
+**Comparisons**
 
 ```text
-{@if manager.post_title == "John"}Managed by John{@/if}
-{@if post_views > 1000}Popular Post!{@/if}
+{@if price > 1000}High Value{@/if}
+{@if status == "active"}Active{@/if}
+{@if not archived}Visible{@/if}
 ```
 
-### With else / elseif
+**Nested fields**
 
 ```text
-{@if category.0.name == "News"}
-  <span class="badge">News</span>
-{@elseif category.0.name == "Updates"}
-  <span class="badge">Update</span>
+{@if link.url}Has Link{@/if}
+```
+
+**Else / Elseif**
+
+```text
+{@if category == "News"}
+  News Post
+{@elseif category == "Updates"}
+  Update Post
 {@else}
-  <span class="badge">Blog</span>
+  Blog
 {@/if}
 ```
 
-### Negation
-
-```text
-{@if not comments}No comments yet{@/if}
-```
-
-### Contains
+**Contains**
 
 ```text
 {@if tags contains "AI"}#ArtificialIntelligence{@/if}
 ```
 
+### Row-Aware Boolean Toggle
+
+```text
+{@each fund_documents}
+  {@if link > 0}
+    LINK: [download link="{@fund_document_url}" name="{@fund_document_title}"]
+  {@else}
+    FILE: [download link="{@fund_document_file}" name="{@fund_document_title}"]
+  {@/if}
+{@/each}
+```
+
+The engine recognizes `1/0`, `true/false`, `on/off`, `yes/no` automatically.
+
+---
+
+## 🔧 **Nested Shortcodes**
+
+Any WordPress shortcode can run inside `[acf_get]`.
+The template is parsed, tokens are replaced, then `do_shortcode()` executes safely.
+
+Example:
+
+```text
+[acf_get]
+  {@each fund_documents}
+    [download link="{@file|url}" name="{@title|esc}"]
+  {@/each}
+[/acf_get]
+```
+
+`acf_get` disables itself temporarily while evaluating to prevent recursion.
+
+---
+
+## 🧩 **Field Label Lookup**
+
+Groups and repeaters expose readable labels:
+
+```text
+{@label:fund_info.some_key}
+```
+
+or via loop variables:
+
+```text
+{@_label}: {@_value}
+```
+
+Useful for generic "key : value" summaries.
+
 ---
 
 ## 🧮 **Filters & Pipes**
 
-Transform values using **pipes (`|`)** inside magic tags.
-
-| Pipe | Action       |                               |         |    |                                        |
-| ---- | ------------ | ----------------------------- | ------- | -- | -------------------------------------- |
-| `    | raw`         | Output without escaping       |         |    |                                        |
-| `    | esc`         | Escape for HTML (default)     |         |    |                                        |
-| `    | upper`       | Uppercase text                |         |    |                                        |
-| `    | lower`       | Lowercase text                |         |    |                                        |
-| `    | nl2br`       | Convert newlines to `<br>`    |         |    |                                        |
-| `    | date:F j, Y` | Format date string            |         |    |                                        |
-| `    | num:2`       | Format number with 2 decimals |         |    |                                        |
-| `    | url`, `      | id`, `                        | img`, ` | a` | Media extractors for image/file fields |
+| Pipe                                | Purpose                    |
+| ----------------------------------- | -------------------------- |
+| `raw`                               | Unescaped output           |
+| `esc`                               | HTML-escaped (default)     |
+| `upper` / `lower`                   | Case transforms            |
+| `nl2br`                             | Convert newlines to `<br>` |
+| `date:F j, Y`                       | Format dates               |
+| `num:2`                             | Number format              |
+| `url` / `id` / `img` / `a` / `link` | Media converters           |
 
 Example:
 
@@ -243,33 +277,29 @@ Example:
 {@post_date|date:F j, Y}
 {@price|num:2}
 {@hero|img}
-{@pdf_file|a}
 ```
 
 ---
 
-## 🌐 **Native WordPress Fields Supported**
+## 🌐 **Native WordPress Fields**
 
-You can fetch standard post fields without ACF.
+Fetch core post fields directly:
 
-| Field Name           | Example                                     | Output            |
-| -------------------- | ------------------------------------------- | ----------------- |
-| `post_title`         | `[acf_get field="post_title"]`              | Title text        |
-| `post_content`       | `[acf_get field="post_content"]`            | Full post content |
-| `post_excerpt`       | `[acf_get field="post_excerpt"]`            | Excerpt text      |
-| `featured_image`     | `[acf_get field="featured_image" as="url"]` | Image URL         |
-| `thumbnail_id`       | `[acf_get field="thumbnail_id"]`            | Attachment ID     |
-| `slug` / `post_name` | `[acf_get field="post_name"]`               | Slug              |
-| `date` / `post_date` | `[acf_get field="post_date" format="0"]`    | Raw date          |
-| `modified`           | `[acf_get field="post_modified"]`           | Modified date     |
-| `author`             | `[acf_get field="post_author"]`             | Author ID         |
-| `permalink`          | `[acf_get field="permalink"]`               | Post link URL     |
+| Field            | Example                                     | Output    |
+| ---------------- | ------------------------------------------- | --------- |
+| `post_title`     | `[acf_get field="post_title"]`              | Title     |
+| `post_content`   | `[acf_get field="post_content"]`            | Content   |
+| `post_excerpt`   | `[acf_get field="post_excerpt"]`            | Excerpt   |
+| `featured_image` | `[acf_get field="featured_image" as="url"]` | Image URL |
+| `post_date`      | `[acf_get field="post_date"]`               | Date      |
+| `permalink`      | `[acf_get field="permalink"]`               | Link      |
+| `author`         | `[acf_get field="post_author"]`             | Author ID |
 
 ---
 
 ## 💡 **Advanced Examples**
 
-### 1. **Full Blog Card Template**
+### 1️⃣ Blog Card
 
 ```text
 [acf_get]
@@ -284,7 +314,7 @@ You can fetch standard post fields without ACF.
 [/acf_get]
 ```
 
-### 2. **Repeater with Nested Condition**
+### 2️⃣ Repeater + Condition
 
 ```text
 [acf_get]
@@ -297,62 +327,87 @@ You can fetch standard post fields without ACF.
 [/acf_get]
 ```
 
-### 3. **Gallery with Limit**
+### 3️⃣ Group Summary List
 
 ```text
-[acf_get field="gallery" as="url" limit="3" sep=" | "]
+[acf_get]
+  <ul>
+    {@each fund_info}
+      {@if _value}
+        <li><strong>{@_label}</strong>: {@_value}</li>
+      {@else}
+        <li><strong>{@_label}</strong>: N/A</li>
+      {@/if}
+    {@/each}
+  </ul>
+[/acf_get]
 ```
 
-### 4. **Dynamic Call-to-Action**
+### 4️⃣ Nested Shortcode Usage
 
 ```text
-[acf_get field="cta_link" as="a" title="Get Started" attr="class=btn-primary"]
+[acf_get]
+  {@each fund_documents}
+    {@if link}
+      [download link="{@fund_document_url}" name="{@fund_document_title}"]
+    {@else}
+      [download link="{@fund_document_file}" name="{@fund_document_title}"]
+    {@/if}
+  {@/each}
+[/acf_get]
 ```
 
 ---
 
-## 🧩 **Best Practices**
+## 🧠 **How Row Awareness Works**
 
-✅ **Use `|esc` or default escaping** for text to prevent HTML injection.
-✅ **Use `|raw`** only for trusted HTML (like post content).
-✅ **Set `format="0"`** when you want raw ACF values for programmatic use.
-✅ **Leverage dot notation** for relationship/repeater subfields.
-✅ **Keep loops shallow** (avoid nesting more than 2–3 levels).
-✅ **Test with and without Elementor loops** — shortcode automatically adapts to context.
+Inside `{@each}`:
+
+* Every token first checks the **current row**.
+* Only if missing, it looks up in the global context.
+* This prevents a global field (like `link`) from hijacking row logic.
+* Empty fields in repeater/group rows are skipped by default.
 
 ---
 
-## ⚡ **Developer Notes**
+## ⚡ **Best Practices**
 
-* Built for PHP 7.4+
-* Compatible with ACF (Free & Pro), Smart Custom Fields, and native WordPress metadata.
-* Safe from fatal errors — missing fields return empty string.
-* Conditionals and loops are regex-based (lightweight, no eval).
-* Output automatically escapes text and attributes.
+✅ Escape text by default (`esc` is implicit).
+✅ Use `raw` only for trusted HTML.
+✅ Limit huge repeaters (`limit="10"`).
+✅ Use dot-notation for nested relationships.
+✅ Combine logic and shortcodes for smart output.
+✅ Works perfectly inside Elementor HTML widgets.
+
+---
+
+## 🧩 **Developer Notes**
+
+* PHP 7.4 +
+* Compatible with **ACF Free/Pro**, **Secure Custom Fields (SCF)**, and native WP metadata.
+* Safe fallback for missing fields — prints badge:
+  *Field `<code>slug</code>` does not exist.*
+* Regex-based lightweight template engine (no `eval`).
+* Runs `do_shortcode()` internally with recursion guard.
 
 ---
 
 ## 📚 **Changelog**
 
-**v2.1.0**
+**v2.2.0**
 
-* Initial release by **Sumair + ChatGPT**
-* Full support for:
-
-  * ACF + SCF field retrieval
-  * Native WP post/term/user fields
-  * Dot-notation
-  * Magic tags
-  * Conditionals (`{@if ...}`)
-  * Repeaters & gallery loops (`{@each ...}`)
-  * Media rendering (`as="img|url|link"`)
-  * Safe escaping + automatic fallbacks
+* Unified ACF / SCF / WP field engine
+* Added group field loop support
+* Row-aware conditional expressions
+* Field label lookup (`{@_label}` / `{@label:path}`)
+* Nested shortcode support
+* Empty-field skipping in loops
+* Safer boolean evaluation (`1/0`, `true/false`, `on/off`)
+* Enhanced dot-notation for nested repeaters & relations
 
 ---
 
-## 💬 **Example Use in Elementor Loop**
-
-Place inside an Elementor *HTML Widget* within a Loop Grid:
+## 💬 **Elementor Example**
 
 ```text
 [acf_get]
@@ -367,22 +422,23 @@ Place inside an Elementor *HTML Widget* within a Loop Grid:
 
 ---
 
-## 🧠 **Summary**
+## 🧩 **Summary**
 
-This plugin turns ACF + WordPress data into a **mini templating language** — no PHP, no theme edits.
-Perfect for:
+This addon transforms ACF + SCF + WordPress metadata into a **live templating language** — loops, logic, media, and labels all inline.
 
-* Elementor & Gutenberg loops
-* Custom field-driven layouts
-* Dynamic relationship & repeater rendering
-* Fast prototyping of data-driven UIs
+Ideal for:
 
-💬 *Think of it as the “Pods Magic Tags” for ACF — modern, safe, and lightning fast.*
+* Elementor & Block Editor loops
+* Custom data-driven layouts
+* Relationship and repeater rendering
+* Field-label summaries and conditional outputs
+
+💬 *Think of it as “Pods Magic Tags for ACF” — lightweight, safe, and surprisingly powerful.*
 
 ---
 
 **Author:** Sumair Ahmed
 **Co-Creator:** ChatGPT (GPT-5)
-**Version:** 1.0.0
-**License:** GPLv2 or later
-**Location:** `/wp-content/plugins/acf-shortcode-addon/`
+**Version:** 2.2.0
+**License:** GPL-2.0 or later
+**Path:** `/wp-content/plugins/acf-shortcode-addon/`
